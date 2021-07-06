@@ -1,0 +1,47 @@
+* {
+    margin:10;
+    padding:0;
+}
+
+body {
+    background-color:Gainsboro;
+}
+
+a {
+    color:#807859;
+    text-decoration:none;
+}
+
+a:hover {
+    text-decoration:underline;
+}
+
+h1 {
+    padding: 10px 10px 10px 10px;
+}
+
+h2 {
+    padding-left: 10px;
+    padding-top: 15px;
+    padding-bottom: 5px;
+}
+
+p {
+    padding: 5px 10px 5px 10px;
+}
+
+.icon {
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+
+.text-center {
+    text-align: center;
+}
+
+#footer {
+    clear: both;
+    background-color:#B6C2CE;
+    padding:.5em;
+}

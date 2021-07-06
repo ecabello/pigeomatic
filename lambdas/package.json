@@ -1,0 +1,14 @@
+{
+  "name": "pigeomatic",
+  "version": "1.0.0",
+  "description": "Pigeomatic phenotype rendering lambda",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Valtam Technologies, LLC",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "canvas": "2.6.1",
+    "lodash": "^4.17.21"
+  }
+}

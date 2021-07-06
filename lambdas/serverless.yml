@@ -1,0 +1,46 @@
+service: pigeomatic
+
+frameworkVersion: '2'
+
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  lambdaHashingVersion: 20201221
+  apiGateway:
+    binaryMediaTypes:
+      - 'image/png'  
+
+package:
+  individually: true
+  patterns:
+    - '!**'
+    - node_modules/**
+    - handlers/**
+    - lib/**
+    - assets/**      
+
+functions:
+  renderPGN:
+    handler: handlers/renderPGN.handler
+    description: Pigeomatic phenotype rendering lambda
+    events:
+      - http:
+          path: /renderPGN
+          method: post
+          request:
+            parameters:
+              paths:
+                size: false
+
+  renderAdultPGN:
+    handler: handlers/renderAdultPGN.handler
+    description: Pigeomatic phenotype rendering lambda (Adult)
+    events:
+      - http:
+          path: /renderAdultPGN
+          method: post
+          request:
+            parameters:
+              paths:
+                size: false

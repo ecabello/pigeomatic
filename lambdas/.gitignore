@@ -1,0 +1,8 @@
+# package directories
+node_modules
+jspm_packages
+utils/images
+utils/*.json
+
+# Serverless directories
+.serverless
