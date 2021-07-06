@@ -5,16 +5,16 @@
 **Pigeomatic is a Work in Progress**
 
 ![Blue Bar hen](/site/images/cf1c5e0a72dbd30d7a47db8778783f2f45e69e9aef4a89f5151472e28efa7b2e.png "Blue Bar Hen") 
-![Black Spread cock](/site/images/1e3e4dd0f5f3b04b6592a73cf9e353857c34ec00ccc303028dc22abefdc3ee3b.png "Black Spread cock")
 ![Blue T-Check hen](/site/images/e081dbc708dab3615412741e6db22b293d72ee6d282a7c6bb84839f4b8798050.png "Blue T-Check hen")
-![Ash Red, Tail mark cock](/site/images/8d3eac16dc35eaa3a2d77aeeedc3d9a764b107f6f6c4132640cf94910b2f8338.png "Ash Red, Tail mark cock")
 ![Black Spread, Crescent and White Flights hen](/site/images/b156a27545e1ccf784f851630b7534cc8afdd60153a226cb2cc1240edf6a25b6.png "Black Spread, Crescent and White Flights hen")
-![Brown, light check cock](/site/images/bd1fcdd4397582a5ad86b5a1b4ce4933e9186d9876d228d5076f54471fb63f82.png "Brown, light check cock")
 ![Grizzle hen](/site/images/e53040de0e2c753584865a10e35538c6a120c781207d6520453a5e663018840c.png "Grizzle hen")
-![Blue, barless cock](/site/images/c8e4e69822a32cb5e708760e83e78ca7fc33f2fc21459fda4105d7b87d4d8613.png "Blue, barless cock")
 ![Ash Red, Dark Check hen](/site/images/77152961ab56a05096f3f1780862832ee46741bbe8292f73d75be088be675488.png "Ash Red, Dark Check hen")
-![Brown, Tiger Grizzle cock](/site/images/3493cbb5e7845dd4f2720869efb3edfa09b08157b48059e238cb6594f7e7ac3c.png "Brown, Tiger Grizzle cock")
 ![Grizzle hen](/site/images/9983092aa6f079bceae2d5fb11ccc5a48abf908f738b266cce7870e549153179.png "Grizzle hen")
+![Black Spread cock](/site/images/1e3e4dd0f5f3b04b6592a73cf9e353857c34ec00ccc303028dc22abefdc3ee3b.png "Black Spread cock")
+![Ash Red, Tail mark cock](/site/images/8d3eac16dc35eaa3a2d77aeeedc3d9a764b107f6f6c4132640cf94910b2f8338.png "Ash Red, Tail mark cock")
+![Brown, light check cock](/site/images/bd1fcdd4397582a5ad86b5a1b4ce4933e9186d9876d228d5076f54471fb63f82.png "Brown, light check cock")
+![Blue, barless cock](/site/images/c8e4e69822a32cb5e708760e83e78ca7fc33f2fc21459fda4105d7b87d4d8613.png "Blue, barless cock")
+![Brown, Tiger Grizzle cock](/site/images/3493cbb5e7845dd4f2720869efb3edfa09b08157b48059e238cb6594f7e7ac3c.png "Brown, Tiger Grizzle cock")
 ![Blue, Dark Check cock](/site/images/95b380c8fba2af2aeb6469c32853ba50d3db9e317e77e87dc32194ff4339d9a5.png "Blue, Dark Check cock")  
 
 PGNs are either males (*cocks*) or females (*hens*) and they can be paired to produce offspring. Each pairing produces two new PGNs called squeakers.  
@@ -44,7 +44,7 @@ ghci> :l Pigeomatic.Pigeon
 ghci> now <- getCurrentTime
 
 -- one year ago so generated PGNs are ready to breed  
-ghci> oneYearAgo = addUTCTime (-365*24*60*60) now
+ghci> oneYearAgo = addUTCTime (-365\*24\*60\*60) now
 
 -- make a new random number generator using seed 123  
 ghci> rnd = mkRandom 123 
@@ -90,7 +90,7 @@ node utils/renderPGNS.js
 If you browse to the utils/images directory you should see 4 png images there. The filename corresponds to the PGN id. You can figure out which is which by checking the pigeons.json file that we wrote from ghci. The squeakers get rendered as adults so you can see what they would look like in the future. If you selected the same seed (123) when creating the random number generator they should look like this:
 
 ![mother](/site/images/1a19ac5c21751dc8917b0690fc5f1d44ca5519e5e0afc8ef363f4185d554d046.png "mother")
-![father](/site/images/29f557f896f7d382eb4d3e1ad91babb8e5683ae54aa28c77e3ebad060c1beba5.png "father")
+![father](/site/images/29f557f896f7d382eb4d3e1ad91babb8e5683ae54aa28c77e3ebad060c1beba5.png "father")  
 ![squeaker 1](/site/images/87859bfe8d7b659df71513ba44ec8127bb31db857f13fcbb30d3878a14262837.png "squeaker 1")
 ![squeaker 2](/site/images/be5a95dc429d3366c56b45201b9a3e4ead4ce67f5b6835163f8a77b105404227.png "squeaker 2")
 
