@@ -7,7 +7,7 @@ const pigeons = require(path.join(__dirname,'/pigeons.json'));
 
 console.log('Loading pigeons...');
 let ps = pigeons.map((pigeon) => {
-    return renderPigeon(pigeon.genotype, 250);
+    return renderPigeon(pigeon.genotype, 400);
 });
 console.log(`loaded ${pigeons.length} pigeons.`);
 

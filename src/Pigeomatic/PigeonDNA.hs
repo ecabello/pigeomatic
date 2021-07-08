@@ -3,11 +3,20 @@
 -- were modeled in a very informal way. A real pigeon has 80 Chromosomes organized
 -- in 40 pairs. Pigeomatic pigeons only have 8 chromosomes organized in 4 pairs
 module Pigeomatic.PigeonDNA (
+    maxPigeonSize, 
+    minPigeonSize,
+    maxPigeonLongevity, 
+    minPigeonLongevity,
+    maxPigeonLoyalty,
+    minPigeonLoyalty,
+    maxPigeonCharisma,
+    minPigeonCharisma,
     pigeonTraits,
     pigeonGenotypeToCompactFormat,
     pigeonGenotypeFromCompactFormat,    
     generateWildTypeChromosomes,
     generateRandomChromosomes,
+    pigeonEffectiveTraitValue
 ) where
 
 import Data.List (find, maximumBy)
@@ -89,6 +98,16 @@ pigeonTraits = [
         ("Max Loyalty", SLocus "LOYT", averagingHandler),
         ("Max Charisma", SLocus "CHRM", averagingHandler)
     ]
+
+
+-- | 'pigeonEffectiveTraitValue' calculates the effective trait value
+pigeonEffectiveTraitValue :: Locus -> [Chromosome] -> Double          
+pigeonEffectiveTraitValue l cs = total / (fromIntegral $ length gs)
+    where gs = alleleGenes l cs
+          total = foldl (\acc g -> acc + (unBlob $ geneBlob g)) 0 gs
+          unBlob b = case b of
+              NumericBlob x -> x
+              otherwise -> 0    
 
 traitFromLocus :: Locus -> String
 traitFromLocus l = case (find (\(_,x,_) -> x == l) pigeonTraits) of

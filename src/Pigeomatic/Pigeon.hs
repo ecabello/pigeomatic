@@ -5,12 +5,18 @@ module Pigeomatic.Pigeon (
     Pigeon(..),
     PigeonSex(..),
     pigeonSex,
+    pigeonSize,
+    pigeonLongevity,
+    pigeonCharisma,
+    pigeonLoyalty,
     isPigeonAlive,
     isPigeonSexuallyMature,
+    canPigeonFly,
     generateWildTypePigeon,
     generateRandomPigeon,
     pairPigeons,
-    computePigeonPhenotype
+    computePigeonPhenotype,
+    pigeonDuel    
 ) where
 
 import Data.Char
@@ -21,7 +27,6 @@ import Pigeomatic.Utils
 import Pigeomatic.GenoLib
 import Pigeomatic.PigeonDNA
 
-
 -- | Pigeons, they breed, they fly, they $#it everywhere and supposedly good at chess...
 data Pigeon = Pigeon {
     pigeonId :: String,
@@ -30,6 +35,9 @@ data Pigeon = Pigeon {
     pigeonBirthday :: UTCTime,
     pigeonGenotype :: Genotype
 } deriving (Show, Read)
+
+instance Eq Pigeon where
+    (==) p1 p2 = pigeonId p1 == pigeonId p2
 
 instance ToJSON Pigeon where
     toJSON (Pigeon pigeonId pigeonFather pigeonMother pigeonBirthday pigeonGenotype ) =
@@ -58,7 +66,7 @@ data PigeonSex = COCK | HEN
 
 -- | 'pigeonSex' determines the sex of the pigeon by looking at the genotype
 pigeonSex :: Pigeon -> PigeonSex
-pigeonSex p | homologous $ last $ genotypeChromosomes $ pigeonGenotype p = COCK
+pigeonSex p | null $ filter (not . homologous) $ genotypeChromosomes $ pigeonGenotype p = COCK
             | otherwise = HEN
 
 -- | 'generateWildTypePigeon' generates a Blue bar pigeon
@@ -72,8 +80,8 @@ generateWildTypePigeon rnd bday = Pigeon {
             genotypeChromosomes = chromosomes
         }
     }
-    where chromosomes = generateWildTypeChromosomes $ skipRandom 1 rnd
-          nonce = show $ fst $ nextRandom rnd
+    where chromosomes = generateWildTypeChromosomes rnd
+          nonce = foldl (\acc i -> acc ++ (show i)) "" (randomInts rnd 3)
 
 -- | 'generateRandomPigeon' generates a fancy looking pigeon
 generateRandomPigeon :: Random -> UTCTime -> Pigeon
@@ -86,30 +94,34 @@ generateRandomPigeon rnd bday = Pigeon {
             genotypeChromosomes= chromosomes
         }
     }
-    where chromosomes = generateRandomChromosomes $ skipRandom 1 rnd
-          nonce = show $ fst $ nextRandom rnd
+    where chromosomes = generateRandomChromosomes rnd
+          nonce = foldl (\acc i -> acc ++ (show i)) "" (randomInts rnd 3)
 
 pairingTime = 10 * 24 * 60 * 60                 -- 10 days pairing time before laying first egg
 secondEggDelay = 1 * 24 * 60 * 60               -- 1 day between laying first egg and second
 incubationTime = 18 * 24 * 60 * 60              -- 18 days incubation 
-sexualMaturityTime = 6 * 30 * 24 * 60 * 60      -- 6 months until they reach sexual maturity 
-maxLifespan = 15 * 365 * 24 * 60 * 60           -- 15 yeas maximum lifespan
+firstFlight = 42 - 24 * 60 * 60                 -- 6 weeks from birth until they master flying
+sexualMaturityTime = 6 * 30 * 24 * 60 * 60      -- 6 months until they reach sexual maturity
+maxLifespan = 15 * 365 * 24 * 60 * 60           -- 15 years maximum lifespan
 
+-- | 'isPigeonAlive' determines if a pigeon is alive at the given time
 isPigeonAlive :: UTCTime -> Pigeon -> Bool
-isPigeonAlive t p = (t `diffUTCTime` bday) > 0 && (death `diffUTCTime` t) > 0
+isPigeonAlive dt p = (dt `diffUTCTime` bday) > 0 && (death `diffUTCTime` dt) > 0
     where death = addUTCTime (realToFrac (lngv * maxLifespan / 100.0)) bday
-          lngv = total / (fromIntegral $ length gs)
-          total = foldl (\acc g -> acc + (unBlob $ geneBlob g)) 0 gs
-          gs = alleleGenes (SLocus "LNGV") ((genotypeChromosomes $ pigeonGenotype p) !! 2)
+          lngv = pigeonLongevity p
           bday = pigeonBirthday p
-          unBlob b = case b of
-              NumericBlob x -> x
-              otherwise -> 0
 
+-- | 'isPigeonSexuallyMature' determines if a pigeon is ready to breed at the given time
 isPigeonSexuallyMature :: UTCTime -> Pigeon -> Bool
-isPigeonSexuallyMature t p = (t `diffUTCTime` maturity) > 0
+isPigeonSexuallyMature dt p = (dt `diffUTCTime` maturity) > 0
     where maturity = addUTCTime sexualMaturityTime (pigeonBirthday p)
 
+canPigeonFly :: UTCTime -> Pigeon -> Bool
+canPigeonFly dt p = (dt `diffUTCTime` fstFlight) > 0 && (death `diffUTCTime` dt) > 0
+    where death = addUTCTime (realToFrac (lngv * maxLifespan / 100.0)) bday
+          lngv = pigeonLongevity p
+          fstFlight = addUTCTime firstFlight bday
+          bday = pigeonBirthday p
 
 -- | 'pairPigeons' given two pigeons of opposite sex, pairs them and returns two squeakers (pigeon babies)
 pairPigeons :: Random -> UTCTime -> Pigeon -> Pigeon -> [Pigeon]
@@ -144,19 +156,52 @@ computePigeonPhenotype :: Pigeon -> Phenotype
 computePigeonPhenotype = computePhenotype (map (\(_, l, h) -> (l,h)) pigeonTraits) . pigeonGenotype
 
 
-{-
-pigeonPhenotypeToXml :: Phenotype -> String
-pigeonPhenotypeToXml p = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Phenotype Organism=\"Pigeon\">" ++ (traitsToXml $ phenotypeTraits p) ++ "</Phenotype>"
-    where
-        traitsToXml :: [Trait] -> String
-        traitsToXml ts = "<Traits>" ++ (foldl (\acc t ->( acc ++ ("<Trait Id=\"" ++ (id t) ++ "\" Name=\"" ++ (name t) ++ "\">" ++ (desc t) ++ (dat t) ++ "</Trait>"))) "" ts) ++ "</Traits>"
-            where id = map toUpper . traitName
-                  name t = traitName t
-                  desc t = "<Description><![CDATA[" ++ (traitDescription t) ++ "]]></Description>"
-                  dat t | traitBlob t == NullBlob = "" 
-                        | otherwise = unBlob t
-                    where unBlob t = case (traitBlob t) of
-                            NumericBlob x -> "<Data Class=\"Number\">" ++ (show x)  ++ "</Data>"
-                            StringBlob x -> "<Data Class=\"String\">" ++ x ++ "</Data>"
-                            otherwise -> ""
--}                            
+-- | 'pigeonDuel' given two pigeons, it pits their charisma against their loyalty
+-- and determines a winner. If both pigeons have more loyalty than their opponent's
+-- charimas the duel ends in a draw and returns Nothing.
+-- Mature pigeons have the advantage of experience gainst new fliers but new fliers
+-- compete at the same level
+pigeonDuel :: UTCTime -> Pigeon -> Pigeon -> Maybe Pigeon
+pigeonDuel dt p1 p2 
+    | canPigeonFly dt p1 && canPigeonFly dt p2 =
+        if p1Mature && not p2Mature then
+            Just p1
+        else 
+            if p2Mature && not p1Mature then
+                Just p2
+            else
+                if p1vsp2 /= p2vsp1 && (p1vsp2 > 0 || p2vsp1 > 0) then
+                    if p1vsp2 > p2vsp1 then
+                        Just p1
+                    else
+                        Just p2
+                else 
+                    Nothing
+    | otherwise = Nothing
+        where p1Mature = isPigeonSexuallyMature dt p1
+              p2Mature = isPigeonSexuallyMature dt p2
+              p1vsp2 = pigeonCharisma p1 - pigeonLoyalty p2
+              p2vsp1 = pigeonCharisma p2 - pigeonLoyalty p1
+
+
+-- | 'pigeonSize' calculates the effective size
+pigeonSize :: Pigeon -> Double
+pigeonSize p = pigeonEffectiveTraitValue (SLocus "SIZE") c3
+    where c3 = (genotypeChromosomes $ pigeonGenotype p) !! 2
+
+-- | 'pigeonLongevity' calculates the effective size
+pigeonLongevity :: Pigeon -> Double
+pigeonLongevity p = pigeonEffectiveTraitValue (SLocus "LNGV") c3
+    where c3 = (genotypeChromosomes $ pigeonGenotype p) !! 2
+
+-- | 'pigeonCharisma' calculates the effective charisma
+pigeonCharisma :: Pigeon -> Double
+pigeonCharisma p = pigeonEffectiveTraitValue (SLocus "CHRM") c3
+    where c3 = (genotypeChromosomes $ pigeonGenotype p) !! 2
+
+-- | 'pigeonLoyalty' calculates the effective loyalty
+pigeonLoyalty :: Pigeon -> Double
+pigeonLoyalty p = pigeonEffectiveTraitValue (SLocus "LOYT") c3
+    where c3 = (genotypeChromosomes $ pigeonGenotype p) !! 2
+
+
