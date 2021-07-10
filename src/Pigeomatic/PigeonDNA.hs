@@ -84,6 +84,12 @@ whiteTailAllele = Gene { geneSymbol="pi(Wt)", geneDescription="White Tail", gene
 noPiedAllele = Gene { geneSymbol="pi(+)", geneDescription="Wild Type", geneDominance=0, geneBlob=NullBlob };
 piedAlleles = [pieBaldAllele, crescentAllele, whiteFlightsAllele, noPiedAllele]
 
+-- Recessive Red
+recessiveRedAllele = Gene { geneSymbol="e", geneDescription="Recessive Red", geneDominance=(-100), geneBlob=StringBlob "-rred" };
+noRecessiveRedAllele = Gene { geneSymbol="E(+)", geneDescription="WildType", geneDominance=0, geneBlob=NullBlob };
+recessiveRedAlleles = [recessiveRedAllele, noRecessiveRedAllele]
+
+
 -- (TraitName, Locus, Handler) table
 pigeonTraits = [
         ("Pigment", SLocus "B", codominanceHandler),
@@ -93,6 +99,7 @@ pigeonTraits = [
         ("Dilution", SLocus "D", codominanceHandler),
         ("Grizzle", SLocus "G", codominanceHandler),
         ("Pied", SLocus "PI", codominanceHandler),
+        ("RRed", SLocus "E", codominanceHandler),
         ("Size", SLocus "SIZE", averagingHandler),
         ("Longevity", SLocus "LNGV", averagingHandler),
         ("Max Loyalty", SLocus "LOYT", averagingHandler),
@@ -150,8 +157,8 @@ pigeonGenotypeFromCompactFormat s = Genotype {
                 mkC1Chromosome (gene 0 0 0) (gene 0 0 1) (gene 0 0 2),
                 mkC1Chromosome (gene 0 1 0) (gene 0 1 1) (gene 0 1 2)
             ], [
-                mkC2Chromosome (gene 1 0 0) (gene 1 0 1),
-                mkC2Chromosome (gene 1 1 0) (gene 1 1 1)
+                mkC2Chromosome (gene 1 0 0) (gene 1 0 1) (gene 1 0 2),
+                mkC2Chromosome (gene 1 1 0) (gene 1 1 1) (gene 1 1 2)
             ], [
                 mkC3Chromosome 
                     (getScalar $ symbol 2 0 0) (getScalar $ symbol 2 0 1) 
@@ -196,7 +203,6 @@ generateRandomChromosomes rnd = [[
     ], [
         mkRandomC2Chromosome (skipRandom 100 rnd),
         mkRandomC2Chromosome (skipRandom 150 rnd)
-
     ], [
         mkRandomC3Chromosome (skipRandom 200 rnd),
         mkRandomC3Chromosome (skipRandom 250 rnd)
@@ -221,6 +227,7 @@ mkWildTypeC2Chromosome =
     mkC2Chromosome
         (getWildTypeGene spreadAlleles) 
         (getWildTypeGene gazziAlleles)
+        (getWildTypeGene recessiveRedAlleles)
 
 mkWildTypeC4Chromosome :: Chromosome
 mkWildTypeC4Chromosome = 
@@ -232,17 +239,19 @@ mkRandomC1Chromosome :: Random -> Chromosome
 mkRandomC1Chromosome rnd = 
     mkC1Chromosome
         (pickRandom rnd patternAlleles)
-        (pickRandom rnd1 (mkRarityList 30 grizzleAlleles))
-        (pickRandom rnd2 (mkRarityList 20 piedAlleles))
+        (pickRandom rnd1 (mkRarityList 20 grizzleAlleles))
+        (pickRandom rnd2 (mkRarityList 10 piedAlleles))
     where rnd1 = skipRandom (length patternAlleles)  rnd
-          rnd2 = skipRandom (length patternAlleles + length grizzleAlleles)  rnd
+          rnd2 = skipRandom (length grizzleAlleles)  rnd1
 
 mkRandomC2Chromosome :: Random -> Chromosome
 mkRandomC2Chromosome rnd = 
     mkC2Chromosome
         (pickRandom rnd spreadAlleles)
-        (pickRandom rnd1 (mkRarityList 30 gazziAlleles)) 
+        (pickRandom rnd1 (mkRarityList 10 gazziAlleles)) 
+        (pickRandom rnd2 (mkRarityList 5 recessiveRedAlleles))
     where rnd1 = skipRandom (length spreadAlleles)  rnd
+          rnd2 = skipRandom (length gazziAlleles)  rnd1
 
 mkRandomC3Chromosome :: Random -> Chromosome
 mkRandomC3Chromosome rnd = mkC3Chromosome 
@@ -255,7 +264,7 @@ mkRandomC4Chromosome :: Random -> Chromosome
 mkRandomC4Chromosome rnd = 
     mkC4Chromosome
         (pickRandom rnd pigmentAlleles)
-        (pickRandom rnd1 dilutionAlleles)
+        (pickRandom rnd1 (mkRarityList 10 dilutionAlleles))
     where rnd1 = skipRandom (length pigmentAlleles)  rnd
 
 
@@ -268,11 +277,12 @@ mkC1Chromosome c g p= Chromosome {
         ]
     }
 
-mkC2Chromosome :: Gene -> Gene -> Chromosome
-mkC2Chromosome s z = Chromosome {
+mkC2Chromosome :: Gene -> Gene -> Gene -> Chromosome
+mkC2Chromosome s z e = Chromosome {
         chromosomeGenes=[
             (SLocus "S", s), 
-            (SLocus "Z", z)
+            (SLocus "Z", z),
+            (SLocus "E", e)
         ]
     }
  
@@ -325,7 +335,7 @@ geneFromSymbol s = case find (\g -> s == geneSymbol g) allGenes of
                         Just g -> g
     where allGenes = pigmentAlleles ++ patternAlleles ++ spreadAlleles ++
                      gazziAlleles ++ dilutionAlleles ++ grizzleAlleles ++
-                     piedAlleles
+                     piedAlleles ++ recessiveRedAlleles
 
 getWildTypeGene :: [Gene] -> Gene
 getWildTypeGene as = case (find (\g -> geneDominance g == 0) as) of

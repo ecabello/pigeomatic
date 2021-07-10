@@ -43,6 +43,10 @@ const allAlleles = [
     { symbol:'pi(Wt)', description:'White Tail', dominance:-100, blob: '-whitetail', trait: 'pied' },
     { symbol:'pi(+)', description:'Wild Type', dominance:0, blob:null },
 
+    // Makes the bird Brick Red colored
+    { symbol: 'e', description: 'Recessive Red', dominance: -100, blob: '-rred', trait: 'rred' },
+    { symbol: 'E(+)', description: 'WildType', dominance: 0, blob: null, trait: 'rred' },
+
     // Others
     { symbol:'SIZE', description:'Size', dominance:0, blob: 0, trait: 'size' },
     { symbol:'LNGV', description:'Longevity', dominance:0, blob: 0, trait: 'longevity' },
@@ -59,6 +63,7 @@ const traitHandlers = {
     dilution: codominanceHandler, 
     pied: codominanceHandler, 
     gazzi: codominanceHandler,
+    rred:  codominanceHandler,
     size: averagingHandler,
     longevity: averagingHandler,
     loyalty: averagingHandler,
@@ -91,9 +96,11 @@ function computeTraits(grp) {
     const alleles = alleleGenes(grp);
     return alleles.flatMap(symbols => {
         const genes = symbols.map(findGene);
-        const handler = traitHandlers[genes[0].trait];
-        if (handler)
-            return handler(genes);
+        if (genes && genes.length) {
+            const handler = traitHandlers[genes[0].trait];
+            if (handler)
+                return handler(genes);
+        }
         return [];
     });
 }

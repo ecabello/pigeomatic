@@ -16,7 +16,7 @@ function renderSqueaker(genotype, size) {
 
 function renderPigeon(genotype, size) {
     let traits = computePhenotype(genotype);
-    const traitRenderOrder = ['size', 'pigment', 'pattern', 'spread', 'grizzle', 'dilution', 'pied', 'gazzi'];
+    const traitRenderOrder = ['size', 'pigment', 'pattern', 'spread', 'rred', 'grizzle', 'dilution', 'pied', 'gazzi'];
     traits = traits.filter(t => traitRenderOrder.includes(t.id));
     traits.sort((t1, t2) => traitRenderOrder.indexOf(t1.id) - traitRenderOrder.indexOf(t2.id));
 
